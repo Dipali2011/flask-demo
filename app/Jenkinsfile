@@ -7,16 +7,7 @@ pipeline {
         APP_VERSION = "${BUILD_NUMBER}"
     }
 
-    stages {
-
-        stage('Checkout Code') {
-            steps {
-                echo "Cloning source code from GitHub..."
-                git branch: 'main',
-                    url: 'https://github.com/Dipali2011/flask-demo.git'
-            }
-        }
-
+    
         stage('Build Docker Image') {
             steps {
                 echo "Building Docker image..."
