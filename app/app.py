@@ -7,7 +7,7 @@ app = Flask(__name__)
 @app.route("/")
 def home():
     return jsonify({
-        "message": "Hello from Dockerized Microservice and Dockerdemo!",
+        "message": "Hello from Dockerized Microservice and Dockerdemo for jenkins!",
         "host": socket.gethostname(),
         "version": os.getenv("APP_VERSION", "1.0.0"),
         "environment": os.getenv("ENV", "development")
