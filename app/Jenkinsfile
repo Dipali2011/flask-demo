@@ -1,0 +1,73 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "flask-microservice"
+        CONTAINER_NAME = "flask-app"
+        APP_VERSION = "${BUILD_NUMBER}"
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                echo "Cloning source code from GitHub..."
+                git branch: 'main',
+                    url: 'https://github.com/<your-username>/flask-demo.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "Building Docker image..."
+                sh '''
+                docker build \
+                  -t ${IMAGE_NAME}:${APP_VERSION} \
+                  -t ${IMAGE_NAME}:latest \
+                  app/
+                '''
+            }
+        }
+
+        stage('Remove Old Container') {
+            steps {
+                echo "Removing existing container if present..."
+                sh 'docker rm -f ${CONTAINER_NAME} || true'
+            }
+        }
+
+        stage('Run New Container') {
+            steps {
+                echo "Starting new application container..."
+                sh '''
+                docker run -d \
+                  --name ${CONTAINER_NAME} \
+                  -p 5000:5000 \
+                  -e APP_VERSION=${APP_VERSION} \
+                  -e ENV=production \
+                  --restart unless-stopped \
+                  ${IMAGE_NAME}:latest
+                '''
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                echo "Checking application health..."
+                sh '''
+                sleep 5
+                curl -f http://localhost:5000/health
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment successful."
+        }
+        failure {
+            echo "Deployment failed."
+        }
+    }
+}
